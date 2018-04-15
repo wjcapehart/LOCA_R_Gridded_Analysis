@@ -1,0 +1,12 @@
+*.pdf
+*.RData
+*.nc.tmp
+*.ncks.tmp
+*.nc4
+*.nc
+*.txt
+*.log
+.RData
+.Rhistory
+LOCA_F_CLIP*
+logs
