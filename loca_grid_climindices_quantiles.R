@@ -12,9 +12,9 @@ library("climdex.pcic")
 #
 ################################################################
 
-PDF_on                  = FALSE
+PDF_on                  = TRUE
 ROW_print_diagnostics   = TRUE
-OPENDAP_on              = TRUE
+OPENDAP_on              = FALSE
 nprocs                  = 8
 
 
@@ -235,6 +235,7 @@ if (PDF_on) {
                     )
                 
   doy = 1:365
+  
 #  arr_xyepd =  array(data    = NA,
 #                    dim      = c(nx,
 #                                 ny,
@@ -411,7 +412,7 @@ if (PDF_on) {
                                          prec.qtiles = percentiles, 
                                          min.base.data.fraction.present = 0.1)
           
-   #       print(temp)
+       #   print(temp)
           
          # tmin_outbase_quantiles[i,j,ens,,] = temp$tmax$outbase
         #  tmax_outbase_quantiles[i,j,ens,,] = temp$tmin$outbase 
@@ -485,7 +486,6 @@ if (PDF_on) {
   save(time_period,
        start_year,
        end_year,
-       doy,
        latitude,
        longitude,
        ensemble_site,
