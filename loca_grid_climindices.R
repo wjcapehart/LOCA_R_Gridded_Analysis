@@ -619,8 +619,6 @@ if (OPENDAP_on){
               w010in_for_1_year = wetting_rain_010in[ year(time_for_period) == year_in_time_period[y] ]
               w050in_for_1_year = wetting_rain_050in[ year(time_for_period) == year_in_time_period[y] ]
               
-              print(w010in_for_1_year)
-              
               rle_w010in = rle(w010in_for_1_year)
               rle_w050in = rle(w050in_for_1_year)
               
