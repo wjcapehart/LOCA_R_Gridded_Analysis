@@ -111,8 +111,7 @@ library("seas")
   period      = 1
   end_year    = start_year + period_span - 1
 
-  year = start_year : end_year
-  
+
   
 
   point_target_i = 51
@@ -316,12 +315,13 @@ if (OPENDAP_on){
     t_end   = max(which(time_year == end_year[period]))
     t_count = t_end - t_start + 1
 
-    year = time[t_start:t_end]
+    time_for_period = time[t_start:t_end]
     year_in_time_period = start_year : end_year
     
     date_yymm = time[day(time)==1]     
     nYm       = length(date_yymm)
     
+    time_for_period = time[t_start:t_end]
     
     time_for_period_PCICt = as.PCICt(x   = as.character(x = time_for_period), 
                                      cal = "gregorian")
