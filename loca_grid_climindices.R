@@ -3,7 +3,6 @@ library("ncdf4")
 library("lubridate") # processing dates and time
 library("climdex.pcic")
 library("PCICt")
-library("seas")
 
 
 
