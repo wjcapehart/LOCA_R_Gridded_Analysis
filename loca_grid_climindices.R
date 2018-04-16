@@ -28,6 +28,7 @@ library("seas")
 
   requested_start_year  = 2006
   requested_period_span = 2099-requested_start_year+1
+  requested_period_span = 2035-requested_start_year+1
   requested_scenario    = "rcp45"
   
   ################################################################
@@ -36,10 +37,18 @@ library("seas")
   #
   ################################################################
   
+  print("==========================================================================")
+  print("==")
+  print("== etccdi_cci_percentiles_SODAK_LOCA_historical_tasmin_tasmax_pr_1961_to_1990")
+  print("==")
+  
+
   load(file =  paste("/projects/ECEP/LOCA_MACA_Ensembles/LOCA/LOCA_R_Gridded_Analysis/",
                      "etccdi_cci_percentiles_SODAK_LOCA_historical_tasmin_tasmax_pr_1961_to_1990.RData",
                      sep=""),
        verbose = TRUE)
+  print("==")
+  print("==========================================================================")
   
   percentiles = seq(from = 0.00,
                     to   = 1.00,
@@ -104,9 +113,7 @@ library("seas")
 
   year = start_year : end_year
   
-  year_month = 
   
-  nY = period_span
 
   point_target_i = 51
   point_target_j = 28
@@ -129,7 +136,9 @@ library("seas")
               sep=""))
   }
 
-  print(start_year)
+  print(paste(start_year,
+              "to",
+              end_year))
   
 ################################################################
 #
@@ -307,7 +316,8 @@ if (OPENDAP_on){
     t_end   = max(which(time_year == end_year[period]))
     t_count = t_end - t_start + 1
 
-    time_for_period = time[t_start:t_end]
+    year = time[t_start:t_end]
+    year_in_time_period = start_year : end_year
     
     date_yymm = time[day(time)==1]     
     nYm       = length(date_yymm)
@@ -320,11 +330,11 @@ if (OPENDAP_on){
     arr_xyYe =  array(data    = NA,
                       dim      = c(nx,
                                    ny,
-                                   nY,
+                                   period_span,
                                    n_ensembles),
                       dimnames = list(longitude,
                                       latitude,
-                                      year,
+                                      year_in_time_period,
                                       ensemble_site) )
     
     # arr_xyMe =  array(data    = NA,
@@ -361,7 +371,17 @@ if (OPENDAP_on){
     climdex.tnn.a    = arr_xyYe
     climdex.rx1day.a = arr_xyYe
     climdex.rx5day.a = arr_xyYe
-    climdex.dtr.a    = arr_xyYe          
+    climdex.dtr.a    = arr_xyYe  
+    
+    seas.interarrival.r03mm_mean.a = arr_xyYe      
+    seas.interarrival.r13mm_mean.a = arr_xyYe      
+    
+    seas.interarrival.r03mm_max.a = arr_xyYe              
+    seas.interarrival.r13mm_max.a = arr_xyYe      
+    
+    seas.interarrival.r03mm_median.a = arr_xyYe      
+    seas.interarrival.r13mm_median.a = arr_xyYe               
+    
  
     #  climdex.tx10p.a  = arr_xyYe
     #  climdex.tx90p.a  = arr_xyYe
@@ -384,6 +404,10 @@ if (OPENDAP_on){
     
     
     for (ens in 1:n_ensembles) {
+      
+      print("==========================================================================")
+      print("==")
+      print(paste("== ", ensemble_site[ens]))
       
       variable = "tasmin"
         thredds_URL_front = paste(thredds_URL_prefix,
@@ -518,11 +542,14 @@ if (OPENDAP_on){
           prec = time_series.pr[j,]
           tavg = (tmax + tmin) / 2
           
-          wetting_rain_001in = prec
+          wetting_rain_010in = prec
           wetting_rain_050in = prec
           
-          wetting_rain_001in[ prec <  2.54] = 0   # dry
-          wetting_rain_001in[ prec >  2.54] = 1   # not dry
+          attributes(wetting_rain_010in) <- NULL
+          attributes(wetting_rain_050in) <- NULL
+          
+          wetting_rain_010in[ prec <  2.54] = 0   # dry
+          wetting_rain_010in[ prec >  2.54] = 1   # not dry
 
           wetting_rain_050in[ prec < 12.70] = 0   # dry
           wetting_rain_050in[ prec > 12.70] = 1   # not dry
@@ -588,14 +615,29 @@ if (OPENDAP_on){
           climdex.rx5day.a[i,j, ,ens]  = climdex.rx5day( ci = clim_indata, freq = "annual")
           climdex.dtr.a[i,j, ,ens]     = climdex.dtr(    ci = clim_indata, freq = "annual")
           
-
-          seas.interarrival.r03mm_max.a[i,j,y,ens] =
-          seas.interarrival.r13mm_max.a[i,j,y,ens] = 
-
-            seas.interarrival.r03mm_mean.a[i,j,y,ens] =
-            seas.interarrival.r13mm_mean.a[i,j,y,ens] = 
+          for (y in 1:period_span) {
             
-                        
+              w010in_for_1_year = wetting_rain_010in[ year(time_for_period) == year_in_time_period[y] ]
+              w050in_for_1_year = wetting_rain_050in[ year(time_for_period) == year_in_time_period[y] ]
+              
+              print(w010in_for_1_year)
+              
+              rle_w010in = rle(w010in_for_1_year)
+              rle_w050in = rle(w050in_for_1_year)
+              
+              interrarrivals_w010in = rle_w010in$lengths[rle_w010in$values==0] 
+              interrarrivals_w050in = rle_w050in$lengths[rle_w050in$values==0] 
+                
+              seas.interarrival.r03mm_max.a[i,j,y,ens] = max(interrarrivals_w010in)
+              seas.interarrival.r13mm_max.a[i,j,y,ens] = max(interrarrivals_w050in)
+
+              seas.interarrival.r03mm_mean.a[i,j,y,ens] = mean(interrarrivals_w010in)
+              seas.interarrival.r13mm_mean.a[i,j,y,ens] = mean(interrarrivals_w050in)
+ 
+              seas.interarrival.r03mm_median.a[i,j,y,ens] = median(interrarrivals_w010in)
+              seas.interarrival.r13mm_median.a[i,j,y,ens] = median(interrarrivals_w050in)
+              
+          }              
           #  climdex.tx10p.a[i,j, ,ens]   = climdex.tx10p(  ci = clim_indata, freq = "annual")
           #  climdex.tx90p.a[i,j, ,ens]   = climdex.tx90p(  ci = clim_indata, freq = "annual")
           #  climdex.tn10p.a[i,j, ,ens]   = climdex.tn10p(  ci = clim_indata, freq = "annual")
@@ -663,8 +705,10 @@ if (OPENDAP_on){
    nc_close(nc.file_tasmin)
    
  
-
-    } #end ensemble looop
+   print("==")
+   print("==========================================================================")
+   
+  } #end ensemble looop
 
 
 
@@ -698,6 +742,12 @@ if (OPENDAP_on){
          climdex.rx1day.a,
          climdex.rx5day.a,
          climdex.dtr.a,
+         seas.interarrival.r03mm_mean.a,  
+         seas.interarrival.r13mm_mean.a,      
+         seas.interarrival.r03mm_max.a,              
+         seas.interarrival.r13mm_max.a,      
+         seas.interarrival.r03mm_median.a,      
+         seas.interarrival.r13mm_median.a,
          file =  paste("/projects/ECEP/LOCA_MACA_Ensembles/LOCA/LOCA_R_Gridded_Analysis/",
                        "etccdi_cci_indicies_",
                        file_prefix,
@@ -1097,7 +1147,70 @@ if (OPENDAP_on){
                                          missval  = fill_value_float,
                                          longname = "Monthly maximum 5-day precipitation",
                                          prec     = "float")      
+
     
+    netcdf_seas_avg_interv_btn_003mm_a =  ncvar_def(nam = "avg_interv_btn_003mm_a",
+                                              units    = "days",
+                                              dim      = list(netcdf_lon_dim,
+                                                         netcdf_lat_dim,
+                                                         netcdf_time_dim,
+                                                         netcdf_ens_dim),
+                                             missval  = fill_value_float,
+                                             longname = "Mean Wetting Rain Return Period (prec>0.1\")",
+                                             prec     = "short")      
+
+    netcdf_seas_med_interv_btn_003mm_a =  ncvar_def(nam = "median_interv_btn_003mm_a",
+                                                   units    = "days",
+                                                   dim      = list(netcdf_lon_dim,
+                                                                   netcdf_lat_dim,
+                                                                   netcdf_time_dim,
+                                                                   netcdf_ens_dim),
+                                                   missval  = fill_value_float,
+                                                   longname = "Median Wetting Rain Return Period (prec>0.1\")",
+                                                   prec     = "short")      
+    
+    netcdf_seas_max_interv_btn_003mm_a =  ncvar_def(nam = "maximum_interv_btn_003mm_a",
+                                                   units    = "days",
+                                                   dim      = list(netcdf_lon_dim,
+                                                                   netcdf_lat_dim,
+                                                                   netcdf_time_dim,
+                                                                   netcdf_ens_dim),
+                                                   missval  = fill_value_float,
+                                                   longname = "Max Wetting Rain Return Period (prec>0.1\")",
+                                                   prec     = "short")           
+    
+    
+    netcdf_seas_avg_interv_btn_013mm_a =  ncvar_def(nam = "avg_interv_btn_013mm_a",
+                                                    units    = "days",
+                                                    dim      = list(netcdf_lon_dim,
+                                                                    netcdf_lat_dim,
+                                                                    netcdf_time_dim,
+                                                                    netcdf_ens_dim),
+                                                    missval  = fill_value_float,
+                                                    longname = "Mean Wetting Rain Return Period (prec>0.5\")",
+                                                    prec     = "float")      
+    
+    netcdf_seas_med_interv_btn_013mm_a =  ncvar_def(nam = "median_interv_btn_013mm_a",
+                                                    units    = "days",
+                                                    dim      = list(netcdf_lon_dim,
+                                                                    netcdf_lat_dim,
+                                                                    netcdf_time_dim,
+                                                                    netcdf_ens_dim),
+                                                    missval  = fill_value_float,
+                                                    longname = "Median Wetting Rain Return Period (prec>0.5\")",
+                                                    prec     = "short")      
+    
+    netcdf_seas_max_interv_btn_013mm_a =  ncvar_def(nam = "max_interv_btn_013mm_a",
+                                                    units    = "days",
+                                                    dim      = list(netcdf_lon_dim,
+                                                                    netcdf_lat_dim,
+                                                                    netcdf_time_dim,
+                                                                    netcdf_ens_dim),
+                                                    missval  = fill_value_float,
+                                                    longname = "Max Wetting Rain Return Period (prec>0.5\")",
+                                                    prec     = "short")           
+    
+        
     print("Variable Coordinates Created")
     
     
@@ -1136,8 +1249,13 @@ if (OPENDAP_on){
                                         netcdf_climdex_tnn_a,
                                         netcdf_climdex_dtr_a,
                                         netcdf_climdex_rx1day_a,
-                                        netcdf_climdex_rx5day_a
-                        ),
+                                        netcdf_climdex_rx5day_a,
+                                        netcdf_seas_avg_interv_btn_003mm_a,
+                                        netcdf_seas_med_interv_btn_003mm_a,
+                                        netcdf_seas_max_interv_btn_003mm_a,
+                                        netcdf_seas_avg_interv_btn_003mm_a,
+                                        netcdf_seas_med_interv_btn_013mm_a,
+                                        netcdf_seas_max_interv_btn_013mm_a                        ),
                         force_v4 = FALSE,
                         verbose  = FALSE )
     
@@ -1928,6 +2046,128 @@ if (OPENDAP_on){
               prec       = NA,
               verbose    = FALSE,
               definemode = FALSE )    
+
+    #
+    # avg_interv_btn_003mm_a; 
+    #
+    
+    ncatt_put(nc         = nc_ghcn,
+              varid      = netcdf_seas_avg_interv_btn_003mm_a,
+              attname    = "description",
+              attval     = "Mean Wetting Rain Return Period (prec>0.1\")",
+              prec       = NA,
+              verbose    = FALSE,
+              definemode = FALSE )
+    
+    ncatt_put(nc         = nc_ghcn,
+              varid      = netcdf_seas_avg_interv_btn_003mm_a,
+              attname    = "long_name",
+              attval     = "Mean Wetting Rain Return Period (prec>0.1\")",
+              prec       = NA,
+              verbose    = FALSE,
+              definemode = FALSE )
+    
+    #
+    # avg_interv_btn_013mm_a; 
+    #
+    
+    ncatt_put(nc         = nc_ghcn,
+              varid      = netcdf_seas_avg_interv_btn_013mm_a,
+              attname    = "description",
+              attval     = "Mean Wetting Rain Return Period (prec>0.5\")",
+              prec       = NA,
+              verbose    = FALSE,
+              definemode = FALSE )
+    
+    ncatt_put(nc         = nc_ghcn,
+              varid      = netcdf_seas_avg_interv_btn_013mm_a,
+              attname    = "long_name",
+              attval     = "Mean Wetting Rain Return Period (prec>0.5\")",
+              prec       = NA,
+              verbose    = FALSE,
+              definemode = FALSE )
+    
+    #
+    # med_interv_btn_003mm_a; 
+    #
+    
+    ncatt_put(nc         = nc_ghcn,
+              varid      = netcdf_seas_med_interv_btn_003mm_a,
+              attname    = "description",
+              attval     = "Median Wetting Rain Return Period (prec>0.1\")",
+              prec       = NA,
+              verbose    = FALSE,
+              definemode = FALSE )
+    
+    ncatt_put(nc         = nc_ghcn,
+              varid      = netcdf_seas_med_interv_btn_003mm_a,
+              attname    = "long_name",
+              attval     = "Median Wetting Rain Return Period (prec>0.1\")",
+              prec       = NA,
+              verbose    = FALSE,
+              definemode = FALSE )   
+  
+    #
+    # med_interv_btn_013mm_a; 
+    #
+    
+    ncatt_put(nc         = nc_ghcn,
+              varid      = netcdf_seas_med_interv_btn_013mm_a,
+              attname    = "description",
+              attval     = "Median Wetting Rain Return Period (prec>0.5\")",
+              prec       = NA,
+              verbose    = FALSE,
+              definemode = FALSE )
+    
+    ncatt_put(nc         = nc_ghcn,
+              varid      = netcdf_seas_med_interv_btn_013mm_a,
+              attname    = "long_name",
+              attval     = "Median Wetting Rain Return Period (prec>0.5\")",
+              prec       = NA,
+              verbose    = FALSE,
+              definemode = FALSE )      
+    
+
+    
+    #
+    # max_interv_btn_003mm_a; 
+    #
+    
+    ncatt_put(nc         = nc_ghcn,
+              varid      = netcdf_seas_max_interv_btn_003mm_a,
+              attname    = "description",
+              attval     = "Maximum Wetting Rain Return Period (prec>0.1\")",
+              prec       = NA,
+              verbose    = FALSE,
+              definemode = FALSE )
+    
+    ncatt_put(nc         = nc_ghcn,
+              varid      = netcdf_seas_max_interv_btn_003mm_a,
+              attname    = "long_name",
+              attval     = "Maximum Wetting Rain Return Period (prec>0.1\")",
+              prec       = NA,
+              verbose    = FALSE,
+              definemode = FALSE )   
+
+    #
+    # max_interv_btn_013mm_a; 
+    #
+    
+    ncatt_put(nc         = nc_ghcn,
+              varid      = netcdf_seas_max_interv_btn_013mm_a,
+              attname    = "description",
+              attval     = "Maximum Wetting Rain Return Period (prec>0.5\")",
+              prec       = NA,
+              verbose    = FALSE,
+              definemode = FALSE )
+    
+    ncatt_put(nc         = nc_ghcn,
+              varid      = netcdf_seas_max_interv_btn_013mm_a,
+              attname    = "long_name",
+              attval     = "Maximum Wetting Rain Return Period (prec>0.5\")",
+              prec       = NA,
+              verbose    = FALSE,
+              definemode = FALSE )       
     
     ##############
     #
@@ -2071,6 +2311,36 @@ if (OPENDAP_on){
               vals    = climdex.rx5day.a,
               verbose = FALSE )  
     
+    ncvar_put(nc      = nc_ghcn,
+              varid   = netcdf_seas_avg_interv_btn_003mm_a,
+              vals    = seas.interarrival.r03mm_mean.a,
+              verbose = FALSE )  
+
+    ncvar_put(nc      = nc_ghcn,
+              varid   = netcdf_seas_avg_interv_btn_013mm_a,
+              vals    = seas.interarrival.r13mm_mean.a,
+              verbose = FALSE )  
     
+    ncvar_put(nc      = nc_ghcn,
+              varid   = netcdf_seas_max_interv_btn_003mm_a,
+              vals    = seas.interarrival.r03mm_max.a,
+              verbose = FALSE )  
+    
+    ncvar_put(nc      = nc_ghcn,
+              varid   = netcdf_seas_max_interv_btn_013mm_a,
+              vals    = seas.interarrival.r13mm_max.a,
+              verbose = FALSE )  
+    
+    ncvar_put(nc      = nc_ghcn,
+              varid   = netcdf_seas_med_interv_btn_003mm_a,
+              vals    = seas.interarrival.r03mm_median.a,
+              verbose = FALSE )  
+    
+    ncvar_put(nc      = nc_ghcn,
+              varid   = netcdf_seas_med_interv_btn_013mm_a,
+              vals    = seas.interarrival.r13mm_median.a,
+              verbose = FALSE )      
+    
+       
     nc_close(nc_ghcn)
     

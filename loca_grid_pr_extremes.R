@@ -16,7 +16,7 @@ library("extRemes")
 #
 ################################################################
 
-PDF_on                  = FALSE
+PDF_on                  = TRUE
 ROW_print_diagnostics   = TRUE
 POINT_print_diagnostics = FALSE
 OPENDAP_on              = FALSE
@@ -69,7 +69,7 @@ standard_name = "precipitation_amount"
 
 yearly_aggregation_method = "sum"
 
-scenario = "rcp85"
+scenario = "rcp45"
 
 file_prefix = "SODAK_LOCA_"
 
