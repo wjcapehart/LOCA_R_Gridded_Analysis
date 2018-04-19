@@ -25,10 +25,10 @@ library("PCICt")
   requested_period_span = 2005-requested_start_year+1
   requested_scenario    = "historical"
 
-  requested_start_year  = 2006
-  requested_period_span = 2099-requested_start_year+1
-  requested_period_span = 2035-requested_start_year+1
-  requested_scenario    = "rcp45"
+ # requested_start_year  = 2006
+#  requested_period_span = 2099-requested_start_year+1
+#  requested_period_span = 2035-requested_start_year+1
+#  requested_scenario    = "rcp45"
   
   ################################################################
   #
@@ -785,7 +785,7 @@ if (OPENDAP_on){
     
     bnds = 1:2
     
-    time_bounds = array( 0,  dim=c(2,period_span), dimnames=list(bnds,year))
+    time_bounds = array( 0,  dim=c(2,length(year)), dimnames=list(bnds,year))
     
     time_bounds[1,] = start_year : end_year
     time_bounds[2,] = bound1 + 1
@@ -815,6 +815,7 @@ if (OPENDAP_on){
                                     ".nc",
                                     sep="")
     
+    print(netcdf_output_file_name)
     print(netcdf_output_file_name)
     
     #
@@ -1144,37 +1145,37 @@ if (OPENDAP_on){
                                          missval  = fill_value_float,
                                          longname = "Monthly maximum 5-day precipitation",
                                          prec     = "float")      
-
+    
     
     netcdf_seas_avg_interv_btn_003mm_a =  ncvar_def(nam = "avg_interv_btn_003mm_a",
-                                              units    = "days",
-                                              dim      = list(netcdf_lon_dim,
-                                                         netcdf_lat_dim,
-                                                         netcdf_time_dim,
-                                                         netcdf_ens_dim),
-                                             missval  = fill_value_float,
-                                             longname = "Mean Wetting Rain Return Period (prec>0.1\")",
-                                             prec     = "short")      
-
+                                                    units    = "days",
+                                                    dim      = list(netcdf_lon_dim,
+                                                                    netcdf_lat_dim,
+                                                                    netcdf_time_dim,
+                                                                    netcdf_ens_dim),
+                                                    missval  = fill_value_short,
+                                                    longname = "Mean Wetting Rain Return Period (prec>0.1\")",
+                                                    prec     = "short")      
+    
     netcdf_seas_med_interv_btn_003mm_a =  ncvar_def(nam = "median_interv_btn_003mm_a",
-                                                   units    = "days",
-                                                   dim      = list(netcdf_lon_dim,
-                                                                   netcdf_lat_dim,
-                                                                   netcdf_time_dim,
-                                                                   netcdf_ens_dim),
-                                                   missval  = fill_value_float,
-                                                   longname = "Median Wetting Rain Return Period (prec>0.1\")",
-                                                   prec     = "short")      
+                                                    units    = "days",
+                                                    dim      = list(netcdf_lon_dim,
+                                                                    netcdf_lat_dim,
+                                                                    netcdf_time_dim,
+                                                                    netcdf_ens_dim),
+                                                    missval  = fill_value_short,
+                                                    longname = "Median Wetting Rain Return Period (prec>0.1\")",
+                                                    prec     = "short")      
     
     netcdf_seas_max_interv_btn_003mm_a =  ncvar_def(nam = "maximum_interv_btn_003mm_a",
-                                                   units    = "days",
-                                                   dim      = list(netcdf_lon_dim,
-                                                                   netcdf_lat_dim,
-                                                                   netcdf_time_dim,
-                                                                   netcdf_ens_dim),
-                                                   missval  = fill_value_float,
-                                                   longname = "Max Wetting Rain Return Period (prec>0.1\")",
-                                                   prec     = "short")           
+                                                    units    = "days",
+                                                    dim      = list(netcdf_lon_dim,
+                                                                    netcdf_lat_dim,
+                                                                    netcdf_time_dim,
+                                                                    netcdf_ens_dim),
+                                                    missval  = fill_value_short,
+                                                    longname = "Max Wetting Rain Return Period (prec>0.1\")",
+                                                    prec     = "short")           
     
     
     netcdf_seas_avg_interv_btn_013mm_a =  ncvar_def(nam = "avg_interv_btn_013mm_a",
@@ -1193,7 +1194,7 @@ if (OPENDAP_on){
                                                                     netcdf_lat_dim,
                                                                     netcdf_time_dim,
                                                                     netcdf_ens_dim),
-                                                    missval  = fill_value_float,
+                                                    missval  = fill_value_short,
                                                     longname = "Median Wetting Rain Return Period (prec>0.5\")",
                                                     prec     = "short")      
     
@@ -1203,11 +1204,11 @@ if (OPENDAP_on){
                                                                     netcdf_lat_dim,
                                                                     netcdf_time_dim,
                                                                     netcdf_ens_dim),
-                                                    missval  = fill_value_float,
+                                                    missval  = fill_value_short,
                                                     longname = "Max Wetting Rain Return Period (prec>0.5\")",
                                                     prec     = "short")           
     
-        
+    
     print("Variable Coordinates Created")
     
     
@@ -1250,7 +1251,7 @@ if (OPENDAP_on){
                                         netcdf_seas_avg_interv_btn_003mm_a,
                                         netcdf_seas_med_interv_btn_003mm_a,
                                         netcdf_seas_max_interv_btn_003mm_a,
-                                        netcdf_seas_avg_interv_btn_003mm_a,
+                                        netcdf_seas_avg_interv_btn_013mm_a,
                                         netcdf_seas_med_interv_btn_013mm_a,
                                         netcdf_seas_max_interv_btn_013mm_a                        ),
                         force_v4 = FALSE,
@@ -2043,7 +2044,7 @@ if (OPENDAP_on){
               prec       = NA,
               verbose    = FALSE,
               definemode = FALSE )    
-
+    
     #
     # avg_interv_btn_003mm_a; 
     #
@@ -2103,7 +2104,7 @@ if (OPENDAP_on){
               prec       = NA,
               verbose    = FALSE,
               definemode = FALSE )   
-  
+    
     #
     # med_interv_btn_013mm_a; 
     #
@@ -2124,7 +2125,7 @@ if (OPENDAP_on){
               verbose    = FALSE,
               definemode = FALSE )      
     
-
+    
     
     #
     # max_interv_btn_003mm_a; 
@@ -2145,7 +2146,7 @@ if (OPENDAP_on){
               prec       = NA,
               verbose    = FALSE,
               definemode = FALSE )   
-
+    
     #
     # max_interv_btn_013mm_a; 
     #
@@ -2312,7 +2313,7 @@ if (OPENDAP_on){
               varid   = netcdf_seas_avg_interv_btn_003mm_a,
               vals    = seas.interarrival.r03mm_mean.a,
               verbose = FALSE )  
-
+    
     ncvar_put(nc      = nc_ghcn,
               varid   = netcdf_seas_avg_interv_btn_013mm_a,
               vals    = seas.interarrival.r13mm_mean.a,
@@ -2338,6 +2339,5 @@ if (OPENDAP_on){
               vals    = seas.interarrival.r13mm_median.a,
               verbose = FALSE )      
     
-       
-    nc_close(nc_ghcn)
     
+    nc_close(nc_ghcn)
